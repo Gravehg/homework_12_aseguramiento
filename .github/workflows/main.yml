@@ -3,7 +3,7 @@ name: Python application
 on: [push, pull_request]
 
 jobs:
-  build:
+  build_and_test:
 
     runs-on: ubuntu-latest
 
@@ -24,4 +24,22 @@ jobs:
 
     - name: Run tests
       run: |
-        python -m unittest discover -s . -p 'test_app.py'
+        python -m unittest discover -s . -p 'TestApp.py'
+  dockerimage:
+    needs: build_and_test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Log in to docker hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build and push docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: backend/
+        push: true
+        tags: gravehg/github-homework-12-aseguramiento:latest
+  
